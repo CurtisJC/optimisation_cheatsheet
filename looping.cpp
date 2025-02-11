@@ -1,7 +1,3 @@
-
-
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Loop unrolling - https://en.wikipedia.org/wiki/Loop_unrolling
 //
@@ -86,18 +82,40 @@ void loop_interchange_2() {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Loop fusion (also see expression templates)
-//
-// The combining of loops...
+// Loop Fusion
+// Loop fusion is an optimization where multiple loops operating on the same data are combined into one.
+// This improves cache locality and reduces loop overhead.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <cstddef> //size_t
+#include <vector>
+
+void loop_fusion(std::vector<int> &a, std::vector<int> &b) {
+    for (std::size_t i = 0; i < a.size(); ++i) {
+        a[i] += 1;
+        b[i] *= 2; // Instead of having two separate loops, we perform both operations in one loop.
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Loop fission - break up a large loop into multiple smaller ones
-//
-// The combining of loops...
+// Loop Fission
+// Loop fission (also known as loop distribution) is an optimization where a large loop is broken into multiple smaller loops.
+// This can improve cache performance when different parts of the loop access different memory regions.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <cstddef> //size_t
+#include <vector>
+
+void loop_fission(std::vector<int> &a, std::vector<int> &b) {
+    for (std::size_t i = 0; i < a.size(); ++i) {
+        a[i] += 1; // First loop processes only 'a'.
+    }
+    for (std::size_t i = 0; i < b.size(); ++i) {
+        b[i] *= 2; // Second loop processes only 'b'.
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -125,6 +143,51 @@ int data_dependancy_2(int (&a)[1000], int (&b)[1000], int (&c)[1000]) {
         a[i+1] += b[i+1];
     }
     return b[999];
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Duff’s Device (Loop Unrolling on Steroids)
+// Duff's Device is an optimization technique that unrolls loops and leverages switch-case fall-throughs.
+// This technique is used to minimize loop overhead and optimize data transfer performance.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <cstddef> //size_t
+
+void duffs_device(char *to, const char *from, std::size_t count) {
+    std::size_t n = (count + 7) / 8; // Compute number of iterations needed
+    switch (count % 8) { // Start execution at the right case to handle remainder
+    case 0: do { *to++ = *from++;
+    case 7:      *to++ = *from++;
+    case 6:      *to++ = *from++;
+    case 5:      *to++ = *from++;
+    case 4:      *to++ = *from++;
+    case 3:      *to++ = *from++;
+    case 2:      *to++ = *from++;
+    case 1:      *to++ = *from++;
+            } while (--n > 0);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// SIMD Optimization
+// SIMD (Single Instruction, Multiple Data) allows vectorized operations, reducing loop overhead.
+// Instead of processing elements one at a time, SIMD processes multiple elements simultaneously.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <cstddef> //size_t
+#include <immintrin.h>
+
+void simd_add(float *a, float *b, float *c, std::size_t N) {
+    for (std::size_t i = 0; i < N; i += 8) {
+        __m256 va = _mm256_load_ps(&a[i]);  // Load 8 floats from a[]
+        __m256 vb = _mm256_load_ps(&b[i]);  // Load 8 floats from b[]
+        __m256 vc = _mm256_add_ps(va, vb);  // Perform 8 additions in one instruction
+        _mm256_store_ps(&c[i], vc);         // Store the result in c[]
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

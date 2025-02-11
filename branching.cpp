@@ -139,3 +139,34 @@ void branch_while_2(std::vector<int> &in) {
 //         ret                                              //
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Branch Prediction and Misprediction
+// Branch prediction helps CPUs optimize conditional jumps by guessing which branch will be taken.
+// If the CPU mispredicts a branch, it has to flush the pipeline and reload instructions, causing a performance penalty.
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <vector>
+#include <cstdlib>
+
+bool branch_mispredict(const std::vector<int> &data) {
+    int sum = 0;
+    for (int x : data) {
+        if (x % 2 == 0) { // Unpredictable branch if data is random, leading to potential mispredictions
+            sum += x;
+        }
+    }
+    return sum > 1000;
+}
+
+bool branch_predict(const std::vector<int> &data) {
+    int sum = 0;
+    for (int x : data) {
+        // Replace branch with arithmetic trick: (x % 2) == 0 evaluates to 1 or 0,
+        // so multiplication effectively nullifies odd numbers without using a branch.
+        sum += x * ((x % 2) == 0);
+    }
+    return sum > 1000;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
