@@ -124,7 +124,10 @@ void loop_fission(std::vector<int> &a, std::vector<int> &b) {
 //
 // In the first loop here there is a data dependency in the use of b[i] and the next iteration of
 // b[i+1]. This is removed in the second loop by doing the first calculation before the loop which
-// allows the compiler to vectorise the loop using simd
+// allows the compiler to vectorise the loop using simd.
+//
+// Use -fopt-info-vec-missed with gcc or -Rpass-missed=loop-vectorize with clang to get warnings if
+// the compiler was unable to vectorise a loop.
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 int data_dependancy_1(int (&a)[1000], int (&b)[1000], int (&c)[1000]) {
